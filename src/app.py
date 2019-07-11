@@ -5,7 +5,8 @@ from flask_restful import Api
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from resources.user import User, UserRegister, UserLogin, TokenRefresh
+from resources.user import User, UserRegister, UserLogin, TokenRefresh, UserList, UserLogout
+from resources.post import Post, NewPost
 
 from database.db import init_db
 
@@ -46,14 +47,17 @@ def create_app(env=None):
     app.secret_key = os.getenv('FLASK_SECRET_KEY', '')
     init_db(app)
     api = Api(app)
-    api.add_resource(User, "/user/<int:user_id>")
-    api.add_resource(UserRegister, "/register")
-    api.add_resource(UserLogin, "/login")
-    api.add_resource(TokenRefresh, "/refresh")
+    api.add_resource(TokenRefresh, "/api/refresh")
+    api.add_resource(User, "/api/user/<int:user_id>")
+    api.add_resource(UserList, "/api/users")
+    api.add_resource(UserRegister, "/api/register")
+    api.add_resource(UserLogin, "/api/login")
+    api.add_resource(UserLogout, "/api/logout")
+    api.add_resource(Post, "/api/user/<int:user_id>/post/<int:post_id>")
+    api.add_resource(NewPost, "/api/submit")
     return app
 
-app = create_app()
-
 if __name__ == '__main__':
+    app = create_app()
     app.run(port=5000, debug=True)
 

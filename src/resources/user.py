@@ -1,6 +1,6 @@
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import create_access_token, create_refresh_token
-from flask_jwt_extended import jwt_refresh_token_required
+from flask_jwt_extended import jwt_refresh_token_required, get_raw_jwt
 from flask_jwt_extended import get_jwt_identity, fresh_jwt_required
 
 from models.user import UserModel
@@ -18,6 +18,11 @@ user_parser.add_argument(
     type=str,
     required=True,
     help="This field can't be blank"
+)
+user_parser.add_argument(
+    "email",
+    type=str,
+    required=False,
 )
 
 class User(Resource):
@@ -53,7 +58,7 @@ class UserRegister(Resource):
             return {
                 "message": "User Already Exists!"
             }, 409
-        user = UserModel(data['username'], hashlib.sha256(data["password"].encode("utf-8")).hexdigest())
+        user = UserModel(data['username'], data['email'], hashlib.sha256(data["password"].encode("utf-8")).hexdigest())
         user.save_to_db()
         return {
             "message": "User %s Created!" % data["username"]
@@ -67,12 +72,20 @@ class UserLogin(Resource):
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)
             return {
+                "id": user.id,
                 "access_token": access_token,
                 "refresh_token": refresh_token
             }, 200
         return {
                 "message": "Invalid Credentials"
         }, 401
+
+class UserLogout(Resource):
+    @jwt_refresh_token_required
+    def post(self):
+        return {
+            "message": "Successfully Logout!"
+        }, 200
 
 class TokenRefresh(Resource):
     @jwt_refresh_token_required
@@ -85,3 +98,13 @@ class TokenRefresh(Resource):
             "refresh_token": new_rtoken
         }, 200
 
+class UserList(Resource):
+    def get(self):
+        users = UserModel.get_all_users()
+        if users:
+            return {
+                "users": [user.json() for user in users]
+            }, 200
+        return {
+            "message": "Users Not Found"
+        }, 404

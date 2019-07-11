@@ -3,3 +3,6 @@ omit=
     tests/*
     app.py
     config.py
+    env/*
+    tmp.py
+    __init__.py

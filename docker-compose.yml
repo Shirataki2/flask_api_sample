@@ -1,0 +1,49 @@
+version: '3.3'
+
+services:
+    db:
+        build: ./mysql
+        container_name: db
+        environment: 
+            MYSQL_USER: root
+            MYSQL_PASSWORD: docker
+            MYSQL_ROOT_PASSWORD: pass
+            MYSQL_DATABASE: flask_social
+        volumes:
+            - ./mysql/mysql_data:/var/lib/mysql
+            - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+            - ./mysql/sql:/docker-entrypoint-initdb.d
+        expose:
+            - '3306'
+        ports:
+            - "3306:3306"
+        networks:
+            - app
+        command: mysqld
+    flask:
+        build: .
+        container_name: flask
+        ports:
+            - '5000:5000'
+        volumes:
+            - './src:/src'
+        depends_on: 
+            - db
+        tty: true
+        environment: 
+            TZ: Asia/Tokyo
+            FLASK_SECRET_KEY: v3ry_1mp0rt4nt_k3y
+            FLASK_APP: app.py
+            FLASK_ENV: development
+            DB_USER: root
+            DB_PASSWORD: pass
+            DB_HOST: db
+            DB_NAME: flask_social
+            ENV: PROD
+        command: bash -c "flask run -h 0.0.0.0"
+        networks: 
+            - app
+
+networks: 
+    app:
+        driver: bridge

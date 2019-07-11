@@ -1,7 +1,11 @@
 .envrc
 .coverage
-/env
-/htmlcov
+resetall.sh
+/**/env
+/**/htmlcov
 /.vscode
-/.pytest_cache
+/**/.pytest_cache
 /**/__pycache__
+/migrations/*
+/*cache
+/mysql/mysql_data/*

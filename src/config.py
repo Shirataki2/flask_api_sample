@@ -19,10 +19,10 @@ class TestConfig:
     # SQLAlchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://%s:%s@%s/%s?charset=utf8' % (
-        os.getenv('DB_USER', 'ishii'),
-        os.getenv('DB_PASSWORD', 'fgjiutx530'),
+        os.getenv('DB_USER', 'root'),
+        os.getenv('DB_PASSWORD', 'V@nhouten530'),
         os.getenv('DB_HOST', 'localhost'),
-        os.getenv('TEST_DB_NAME', 'test_flask')
+        os.getenv('TEST_DB_NAME', 'test_flask_social')
     )
     SQLALCHEMY_ECHO = False
 
