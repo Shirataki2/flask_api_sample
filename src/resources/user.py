@@ -39,6 +39,14 @@ posts_parser.add_argument(
     help="This field can't be blank"
 )
 
+ff_parser = reqparse.RequestParser()
+ff_parser.add_argument(
+    "id",
+    type=int,
+    required=True,
+    help="This field can't be blank"
+)
+
 class User(Resource):
     def get(self, user_id):
         user = UserModel.find_user_by_id(user_id)
@@ -65,6 +73,51 @@ class User(Resource):
             "message": "User Not Found"
         }, 404
 
+class UserRelationship(Resource):
+    @jwt_required
+    def get(self):
+        cuid = get_jwt_identity()
+        user = UserModel.find_user_by_id(_id=cuid)
+        if not user:
+            return {
+                "message": "User Not Found"
+            }, 404
+        following = user.get_following()
+        follower = user.get_follower()
+        return {
+            "following": [user.json()[0] for user in following],
+            "follower": [user.json()[0] for user in follower]
+        }, 200
+
+    @fresh_jwt_required
+    def post(self):
+        cuid = get_jwt_identity()
+        user = UserModel.find_user_by_id(_id=cuid)
+        if not user:
+            return {
+                "message": "User Not Found"
+            }, 404
+        data = ff_parser.parse_args()
+        user.follow_user_by_id(data['id'])
+        return {
+            "message": "User Followed."
+        }
+
+    @fresh_jwt_required
+    def delete(self):
+        cuid = get_jwt_identity()
+        user = UserModel.find_user_by_id(_id=cuid)
+        if not user:
+            return {
+                "message": "User Not Found"
+            }, 404
+        data = ff_parser.parse_args()
+        user.unfollow_user_by_id(data['id'])
+        return {
+            "message": "User Unfollowed."
+        }
+
+
 class UserRegister(Resource):
     def post(self):
         data = user_parser.parse_args()
@@ -82,6 +135,10 @@ class UserLogin(Resource):
     def post(self):
         data = user_parser.parse_args()
         user = UserModel.find_user_by_username(data["username"])
+        if not user:
+            return {
+                "message": "User not Found"
+            }, 404
         if user and user.password == hashlib.sha256(data["password"].encode("utf-8")).hexdigest():
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)

@@ -5,7 +5,7 @@ from flask_restful import Api
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 
-from resources.user import User, UserRegister, UserLogin, TokenRefresh, UserList, UserLogout, MyPost
+from resources.user import User, UserRegister, UserLogin, TokenRefresh, UserList, UserLogout, UserRelationship, MyPost
 from resources.post import Post, NewPost
 
 from database.db import init_db
@@ -52,6 +52,7 @@ def create_app(env=None):
     api.add_resource(UserList, "/api/users")
     api.add_resource(MyPost, "/api/posts")
     api.add_resource(UserRegister, "/api/register")
+    api.add_resource(UserRelationship, "/api/following")
     api.add_resource(UserLogin, "/api/login")
     api.add_resource(UserLogout, "/api/logout")
     api.add_resource(Post, "/api/user/<int:user_id>/post/<int:post_id>")

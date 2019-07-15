@@ -37,6 +37,35 @@ class UserModel(db.Model):
     def get_posts(self, limit, offset):
         return PostModel.query.order_by(desc(PostModel.id)).limit(limit).offset(offset)
 
+    def get_follower(self):
+        return self.followed.filter(followers.c.followed_id==self.id)
+
+    def get_following(self):
+        return self.followed.filter(followers.c.follower_id==self.id)
+
+    def is_following(self, user):
+        return len(self.followed.filter(followers.c.followed_id==user.id).all()) > 0
+
+    def follow_user_by_id(self, user_id):
+        user = UserModel.find_user_by_id(_id=user_id)
+        if not self.is_following(user):
+            self.followed.append(user)
+            db.session.commit()
+            return self
+
+    def unfollow_user_by_id(self, user_id):
+        user = UserModel.find_user_by_id(_id=user_id)
+        if self.is_following(user):
+            self.followed.remove(user)
+            db.session.commit()
+            return self
+
+    def followed_posts(self):
+        return PostModel.query()\
+                        .join(followers, (followers.c.followed_id == PostModel.uid))\
+                        .filter(followers.c.follower_id == self.id)\
+                        .order_by(desc(PostModel.id))
+
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
