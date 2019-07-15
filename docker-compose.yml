@@ -1,22 +1,27 @@
-version: '3.3'
+version: '3.7'
 
 services:
     db:
-        build: ./mysql
+        build: 
+            context: ./mysql
         container_name: db
-        environment: 
-            MYSQL_USER: root
-            MYSQL_PASSWORD: docker
+        environment:
+            TZ: 'Asia/Tokyo'
+            MYSQL_USER: docker
+            MYSQL_PASSWORD: veryveryimportantpassword
             MYSQL_ROOT_PASSWORD: veryveryimportantpassword
             MYSQL_DATABASE: flask_social
+            BIND-ADDRESS: 0.0.0.0
+        user: docker:mysql
+        tty: true
         restart: always
         ports:
             - "3306:3306"
         volumes:
             - ./mysql/mysql_data:/var/lib/mysql
             - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
-            - ./mysql/sql:/docker-entrypoint-initdb.d
-        command: mysqld
+            - ./mysql/initdb.d:/docker-entrypoint-initdb.d
+        #command: bash -c "mysqld"
     flask:
         restart: always
         build: .
@@ -25,17 +30,15 @@ services:
             - '5000:5000'
         expose:
             - 5000
-        volumes:
-            - './src:/src'
         tty: true
-        links:
+        depends_on:
             - db
         environment: 
             TZ: Asia/Tokyo
             FLASK_SECRET_KEY: v3ry_1mp0rt4nt_k3y
             FLASK_APP: app.py
             FLASK_ENV: production
-            DB_USER: root
+            DB_USER: docker
             DB_PASSWORD: veryveryimportantpassword
             DB_HOST: db
             DB_NAME: flask_social
