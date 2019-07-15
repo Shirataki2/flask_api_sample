@@ -298,21 +298,10 @@ class UserCRUDTest(BaseTestCase):
         self.assert_status(resp, 200)
         data = json.loads(resp.get_data())
         token2 = data['access_token']
-        rtoken2 = data['refresh_token']
         resp = self.app.delete(
             '/api/user/1',
             headers={
                 "Authorization": "Bearer %s" % token2
-            }
-        )
-        print(resp.get_data())
-        self.assert_status(resp, 401)
-        resp = self.app.get('/api/user/1')
-        self.assert_status(resp, 200)
-        resp = self.app.delete(
-            '/api/user/1',
-            headers={
-                "Authorization": "Bearer %s" % token1
             }
         )
         print(resp.get_data())

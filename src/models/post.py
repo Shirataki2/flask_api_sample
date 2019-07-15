@@ -15,7 +15,7 @@ class PostModel(db.Model):
         db.ForeignKey('users.id'),
         nullable=False
     )
-    text = db.Column(db.String(240), nullable=False)
+    text = db.Column(db.Text(300), nullable=False)
     post_at = db.Column(
         db.DateTime,
         nullable=False,
@@ -28,7 +28,8 @@ class PostModel(db.Model):
         return {
             "id": self.id,
             "user_id": self.uid,
-            "text": self.text
+            "text": self.text,
+            "post_at": self.post_at.timestamp()
         }, 200
 
     def save_to_db(self):

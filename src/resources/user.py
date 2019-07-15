@@ -1,7 +1,7 @@
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_jwt_extended import jwt_refresh_token_required, get_raw_jwt
-from flask_jwt_extended import get_jwt_identity, fresh_jwt_required
+from flask_jwt_extended import get_jwt_identity, fresh_jwt_required, jwt_required
 
 from models.user import UserModel
 import hashlib
@@ -23,6 +23,20 @@ user_parser.add_argument(
     "email",
     type=str,
     required=False,
+)
+
+posts_parser = reqparse.RequestParser()
+posts_parser.add_argument(
+    "limit",
+    type=int,
+    required=True,
+    help="This field can't be blank"
+)
+posts_parser.add_argument(
+    "offset",
+    type=int,
+    required=True,
+    help="This field can't be blank"
 )
 
 class User(Resource):
@@ -62,7 +76,7 @@ class UserRegister(Resource):
         user.save_to_db()
         return {
             "message": "User %s Created!" % data["username"]
-        }
+        }, 200
 
 class UserLogin(Resource):
     def post(self):
@@ -91,11 +105,9 @@ class TokenRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
         cuid = get_jwt_identity()
-        new_token = create_access_token(identity=cuid, fresh=False)
-        new_rtoken = create_refresh_token(identity=cuid)
+        new_token = create_access_token(identity=cuid, fresh=True)
         return {
             "access_token": new_token,
-            "refresh_token": new_rtoken
         }, 200
 
 class UserList(Resource):
@@ -103,8 +115,24 @@ class UserList(Resource):
         users = UserModel.get_all_users()
         if users:
             return {
-                "users": [user.json() for user in users]
+                "users": [user.json()[0] for user in users]
             }, 200
         return {
             "message": "Users Not Found"
+        }, 404
+
+class MyPost(Resource):
+    @jwt_required
+    def post(self):
+        data = posts_parser.parse_args()
+        cuid = get_jwt_identity()
+        lim = data['limit']
+        off = data['offset']
+        posts = UserModel.find_user_by_id(_id=cuid).get_posts(limit=lim, offset=off)
+        if posts:
+            return {
+                "posts": [post.json()[0] for post in posts]
+            }, 200
+        return {
+            "message": "User Not Found"
         }, 404
