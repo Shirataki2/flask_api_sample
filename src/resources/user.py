@@ -78,6 +78,7 @@ class UserRelationship(Resource):
     def get(self):
         cuid = get_jwt_identity()
         user = UserModel.find_user_by_id(_id=cuid)
+        np = user.get_number_of_posts()
         if not user:
             return {
                 "message": "User Not Found"
@@ -85,6 +86,7 @@ class UserRelationship(Resource):
         following = user.get_following()
         follower = user.get_follower()
         return {
+            "posts": np,
             "following": [user.json()[0] for user in following],
             "follower": [user.json()[0] for user in follower]
         }, 200

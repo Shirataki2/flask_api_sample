@@ -37,8 +37,11 @@ class UserModel(db.Model):
     def get_posts(self, limit, offset):
         return PostModel.query.order_by(desc(PostModel.id)).limit(limit).offset(offset)
 
+    def get_number_of_posts(self):
+        return len(self.posts)
+
     def get_follower(self):
-        return self.followed.filter(followers.c.followed_id==self.id)
+        return self.followers.filter(followers.c.followed_id==self.id)
 
     def get_following(self):
         return self.followed.filter(followers.c.follower_id==self.id)

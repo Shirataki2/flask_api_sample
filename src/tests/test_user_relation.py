@@ -101,5 +101,5 @@ class UserRelationTest(BaseTestCase):
         )
         data = json.loads(resp.get_data())
         print(data)
-        self.assert200(resp)
+        self.assert400(resp)
 
